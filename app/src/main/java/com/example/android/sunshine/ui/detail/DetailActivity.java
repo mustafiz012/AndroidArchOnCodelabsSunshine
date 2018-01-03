@@ -19,6 +19,7 @@ import android.arch.lifecycle.ViewModelProviders;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 
 import com.example.android.sunshine.R;
 import com.example.android.sunshine.data.database.WeatherEntry;
@@ -35,7 +36,7 @@ import java.util.Date;
 public class DetailActivity extends AppCompatActivity {
 
     public static final String WEATHER_ID_EXTRA = "WEATHER_ID_EXTRA";
-
+    private static final String TAG = DetailActivity.class.getSimpleName();
     /*
      * This field is used for data binding. Normally, we would have to call findViewById many
      * times to get references to the Views in this Activity. With data binding however, we only
@@ -63,6 +64,7 @@ public class DetailActivity extends AppCompatActivity {
     }
 
     private void bindWeatherToUI(WeatherEntry weatherEntry) {
+        Log.i(TAG, "bindWeatherToUI: ");
         /****************
          * Weather Icon *
          ****************/

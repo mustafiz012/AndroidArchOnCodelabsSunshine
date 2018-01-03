@@ -39,7 +39,7 @@ import java.util.concurrent.TimeUnit;
 public class WeatherNetworkDataSource {
     // The number of days we want our API to return, set to 14 days or two weeks
     static final int NUM_DAYS = 14;
-    private static final String LOG_TAG = WeatherNetworkDataSource.class.getSimpleName();
+    private static final String TAG = WeatherNetworkDataSource.class.getSimpleName();
 
     // Interval at which to sync with the weather. Use TimeUnit for convenience, rather than
     // writing out a bunch of multiplication ourselves and risk making a silly mistake.
@@ -66,11 +66,11 @@ public class WeatherNetworkDataSource {
      * Get the singleton for this class
      */
     public static WeatherNetworkDataSource getInstance(Context context, AppExecutors executors) {
-        Log.d(LOG_TAG, "Getting the network data source");
+        Log.d(TAG, "Getting the network data source");
         if (instance == null) {
             synchronized (LOCK) {
                 instance = new WeatherNetworkDataSource(context.getApplicationContext(), executors);
-                Log.d(LOG_TAG, "Made new network data source");
+                Log.d(TAG, "Made new network data source");
             }
         }
         return instance;
@@ -86,7 +86,7 @@ public class WeatherNetworkDataSource {
     public void startFetchWeatherService() {
         Intent intentToFetch = new Intent(mContext, SunshineSyncIntentService.class);
         mContext.startService(intentToFetch);
-        Log.d(LOG_TAG, "Service created");
+        Log.d(TAG, "Service created");
     }
 
     /**
@@ -138,14 +138,14 @@ public class WeatherNetworkDataSource {
 
         // Schedule the Job with the dispatcher
         dispatcher.schedule(syncSunshineJob);
-        Log.d(LOG_TAG, "Job scheduled");
+        Log.d(TAG, "Job scheduled");
     }
 
     /**
      * Gets the newest weather
      */
     void fetchWeather() {
-        Log.d(LOG_TAG, "Fetch weather started");
+        Log.d(TAG, "Fetch weather started");
         mExecutors.networkIO().execute(() -> {
             try {
 
@@ -160,20 +160,20 @@ public class WeatherNetworkDataSource {
 
                 // Parse the JSON into a list of weather forecasts
                 WeatherResponse response = new OpenWeatherJsonParser().parse(jsonWeatherResponse);
-                Log.d(LOG_TAG, "JSON Parsing finished");
+                Log.d(TAG, "JSON Parsing finished");
 
 
                 // As long as there are weather forecasts, update the LiveData storing the most recent
                 // weather forecasts. This will trigger observers of that LiveData, such as the
                 // SunshineRepository.
                 if (response != null && response.getWeatherForecast().length != 0) {
-                    Log.d(LOG_TAG, "JSON not null and has " + response.getWeatherForecast().length
+                    Log.d(TAG, "JSON not null and has " + response.getWeatherForecast().length
                             + " values");
-                    Log.d(LOG_TAG, String.format("First value is %1.0f and %1.0f",
+                    Log.d(TAG, String.format("First value is %1.0f and %1.0f",
                             response.getWeatherForecast()[0].getMin(),
                             response.getWeatherForecast()[0].getMax()));
                     for (WeatherEntry weatherEntry : response.getWeatherForecast()) {
-                        Log.i(LOG_TAG, weatherEntry.getMin() + " :fetchWeather: " + weatherEntry.getMax());
+                        Log.i(TAG, weatherEntry.getMin() + " :fetchWeather: " + weatherEntry.getMax());
                     }
 
                     // TODO Finish this method when instructed.
