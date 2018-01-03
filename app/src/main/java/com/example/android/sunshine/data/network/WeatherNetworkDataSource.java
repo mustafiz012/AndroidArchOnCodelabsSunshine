@@ -15,11 +15,13 @@
  */
 package com.example.android.sunshine.data.network;
 
+import android.arch.lifecycle.MutableLiveData;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
 import com.example.android.sunshine.AppExecutors;
+import com.example.android.sunshine.data.database.WeatherEntry;
 import com.firebase.jobdispatcher.Constraint;
 import com.firebase.jobdispatcher.Driver;
 import com.firebase.jobdispatcher.FirebaseJobDispatcher;
@@ -36,7 +38,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class WeatherNetworkDataSource {
     // The number of days we want our API to return, set to 14 days or two weeks
-    public static final int NUM_DAYS = 14;
+    static final int NUM_DAYS = 14;
     private static final String LOG_TAG = WeatherNetworkDataSource.class.getSimpleName();
 
     // Interval at which to sync with the weather. Use TimeUnit for convenience, rather than
@@ -48,14 +50,16 @@ public class WeatherNetworkDataSource {
 
     // For Singleton instantiation
     private static final Object LOCK = new Object();
-    private static WeatherNetworkDataSource sInstance;
+    private static WeatherNetworkDataSource instance;
     private final Context mContext;
 
     private final AppExecutors mExecutors;
+    private final MutableLiveData<WeatherEntry[]> mDownloadedWeatherForecasts;
 
     private WeatherNetworkDataSource(Context context, AppExecutors executors) {
         mContext = context;
         mExecutors = executors;
+        mDownloadedWeatherForecasts = new MutableLiveData<>();
     }
 
     /**
@@ -63,13 +67,17 @@ public class WeatherNetworkDataSource {
      */
     public static WeatherNetworkDataSource getInstance(Context context, AppExecutors executors) {
         Log.d(LOG_TAG, "Getting the network data source");
-        if (sInstance == null) {
+        if (instance == null) {
             synchronized (LOCK) {
-                sInstance = new WeatherNetworkDataSource(context.getApplicationContext(), executors);
+                instance = new WeatherNetworkDataSource(context.getApplicationContext(), executors);
                 Log.d(LOG_TAG, "Made new network data source");
             }
         }
-        return sInstance;
+        return instance;
+    }
+
+    public MutableLiveData<WeatherEntry[]> getCurrentWeatherForecasts() {
+        return mDownloadedWeatherForecasts;
     }
 
     /**
@@ -164,9 +172,13 @@ public class WeatherNetworkDataSource {
                     Log.d(LOG_TAG, String.format("First value is %1.0f and %1.0f",
                             response.getWeatherForecast()[0].getMin(),
                             response.getWeatherForecast()[0].getMax()));
+                    for (WeatherEntry weatherEntry : response.getWeatherForecast()) {
+                        Log.i(LOG_TAG, weatherEntry.getMin() + " :fetchWeather: " + weatherEntry.getMax());
+                    }
 
                     // TODO Finish this method when instructed.
                     // Will eventually do something with the downloaded data
+                    mDownloadedWeatherForecasts.postValue(response.getWeatherForecast());
                 }
             } catch (Exception e) {
                 // Server probably invalid
